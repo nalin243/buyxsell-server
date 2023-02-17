@@ -11,7 +11,10 @@ const bodyParser = require('body-parser')
 const passport = require('passport')
 const cors = require('cors')
 
-const User = require('../models/UserSchema')
+const SellerUser = require('../models/SellerUserSchema')
+const BuyerUser = require('../models/BuyerUserSchema')
+
+
 mongoose.connect(process.env.DB_URL)
 
 const app = express()
@@ -23,7 +26,8 @@ app.use(passport.initialize())
 require('./passport')
 
 app.post('/register',(req,res)=>{
-	User.findOne({username:req.body.username})
+	if(req.body.userType === "Seller"){
+		SellerUser.findOne({username:req.body.username})
 		.then((user)=>{
 			if(user){
 				res.status(200).send({
@@ -33,59 +37,147 @@ app.post('/register',(req,res)=>{
 			}
 			else{
 				bcrypt.hash(req.body.password,10,(err,hash)=>{
-				if(err)
-					console.log(err)
+					if(err)
+						console.log(err)
 
-				const user = new User({
-					username: req.body.username,
-					password: hash 
-		})	
-		user.save()
-	})
+					const user = new SellerUser()
 
-	res.status(200).send({
-		success:true,
-		message:"New user registered"
-	})
+					user.username = req.body.username
+					user.password = hash
+					user.email = req.body.email
+
+					const error = user.validateSync()
+						if(!error){
+							user.save()
+								res.status(200).send({
+									success:true,
+									message:"New seller user registered"
+							})
+						}
+						else {
+							res.status(400).send({
+								success:false,
+								message:error.errors.email.properties.message
+							})
+						}
+				})
 			}
 		})
+	}
+	else if(req.body.userType === "Buyer"){
+		BuyerUser.findOne({username:req.body.username})
+		.then((user)=>{
+			if(user){
+				res.status(200).send({
+					success:false,
+					message:"User already exists!"
+				})
+			}
+			else{
+				bcrypt.hash(req.body.password,10,(err,hash)=>{
+					if(err)
+						console.log(err)
+
+						const user = new BuyerUser()
+
+						user.username = req.body.username
+						user.password = hash
+						user.email = req.body.email
+
+						const error = user.validateSync()
+						if(!error){
+							user.save()
+								res.status(200).send({
+									success:true,
+									message:"New buyer user registered"
+							})
+						}
+						else {
+							res.status(400).send({
+								success:false,
+								message:error.errors.email.properties.message
+							})
+						}
+				
+				})
+			}
+		})
+	}
 })
 
 app.post("/login",(req,res)=>{
-	User.findOne({username:req.body.username})
-		.then((user)=>{
-			if(!user){
-				res.status(400).send({
-					success:false,
-					message:"User not found"
-				})
-			}
-			else {
-				bcrypt.compare(req.body.password,user.password,(err,result)=>{
-					if(!result){
-						res.status(400).send({
-							success:false,
-							message:"Incorrect password!"
-						})
-					}
-					else {
-
-						const payload = {
-							username: user.username,
-							id: user._id
+	if(req.body.userType === "Buyer"){
+		BuyerUser.findOne({username:req.body.username})
+			.then((user)=>{
+				if(!user){
+					res.status(400).send({
+						success:false,
+						message:"User not found"
+					})
+				}
+				else {
+					bcrypt.compare(req.body.password,user.password,(err,result)=>{
+						if(!result){
+							res.status(400).send({
+								success:false,
+								message:"Incorrect password!"
+							})
 						}
+						else {
 
-						const token = jwt.sign(payload,process.env.SECRETKEY,{expiresIn:'1h'})
-						res.status(200).send({
-							sucess:true,
-							message:"Logged in!",
-							user: user.username,
-							token: "Bearer "+token
-						})
-					}
-				})
-			}
-		})
+							const payload = {
+								username: user.username,
+								id: user._id,
+							}
+
+							const token = jwt.sign(payload,process.env.SECRETKEY,{expiresIn:'1h'})
+							res.status(200).send({
+								sucess:true,
+								message:"Logged in!",
+								user: user.username,
+								token: "Bearer "+token
+							})
+						}
+					})
+				}
+			})
+	}
+	else if(req.body.userType === "Seller") {
+		SellerUser.findOne({username:req.body.username})
+			.then((user)=>{
+				if(!user){
+					res.status(400).send({
+						success:false,
+						message:"User not found"
+					})
+				}
+				else {
+					bcrypt.compare(req.body.password,user.password,(err,result)=>{
+						if(!result){
+							res.status(400).send({
+								success:false,
+								message:"Incorrect password!"
+							})
+						}
+						else {
+
+							const payload = {
+								username: user.username,
+								id: user._id,
+							}
+
+							const token = jwt.sign(payload,process.env.SECRETKEY,{expiresIn:'1h'})
+							res.status(200).send({
+								sucess:true,
+								message:"Logged in!",
+								user: user.username,
+								token: "Bearer "+token
+							})
+						}
+					})
+				}
+			})
+	}
 })
 
 app.get("/authcheck",passport.authenticate('jwt',{session:false}),(req,res)=>{
@@ -93,7 +185,8 @@ app.get("/authcheck",passport.authenticate('jwt',{session:false}),(req,res)=>{
 	res.status(200).send({
 		success:true,
 		message:"User already logged in!",
-		user:req.user.username
+		user:req.user.username,
+		userType:req.user.userType
 	})
 })
 
