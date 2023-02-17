@@ -9,11 +9,13 @@ const express = require('express')
 const bcrypt = require('bcrypt')
 const bodyParser = require('body-parser')
 const passport = require('passport')
+const cors = require('cors')
 
 const User = require('../models/UserSchema')
 mongoose.connect(process.env.DB_URL)
 
 const app = express()
+app.use(cors())
 app.use(bodyParser.urlencoded({extended:true}))
 app.use(bodyParser.json())
 app.use(passport.initialize())
@@ -73,16 +75,26 @@ app.post("/login",(req,res)=>{
 							id: user._id
 						}
 
-						const token = jwt.sign(payload,process.env.SECRETKEY,{expiresIn:'1d'})
+						const token = jwt.sign(payload,process.env.SECRETKEY,{expiresIn:'1h'})
 						res.status(200).send({
 							sucess:true,
 							message:"Logged in!",
+							user: user.username,
 							token: "Bearer "+token
 						})
 					}
 				})
 			}
 		})
+})
+
+app.get("/authcheck",passport.authenticate('jwt',{session:false}),(req,res)=>{
+	console.log("Checking authentication...")
+	res.status(200).send({
+		success:true,
+		message:"User already logged in!",
+		user:req.user.username
+	})
 })
 
 app.listen(PORT,HOST,()=>{

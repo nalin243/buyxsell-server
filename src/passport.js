@@ -10,7 +10,6 @@ const options = {
 }
 
 passport.use(new JwtStrategy(options,(jwtPayload,done)=>{
-	console.log("entering auth")
 	User.findOne({username:jwtPayload.username})
 		.then((user)=>{
 			if(!user)
