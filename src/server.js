@@ -43,6 +43,7 @@ app.post('/register',(req,res)=>{
 					const user = new SellerUser()
 
 					user.username = req.body.username
+					user.name = req.body.name
 					user.password = hash
 					user.email = req.body.email
 
@@ -81,6 +82,7 @@ app.post('/register',(req,res)=>{
 						const user = new BuyerUser()
 
 						user.username = req.body.username
+						user.name = req.body.name
 						user.password = hash
 						user.email = req.body.email
 
