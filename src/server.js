@@ -132,7 +132,7 @@ app.post("/login",(req,res)=>{
 
 							const token = jwt.sign(payload,process.env.SECRETKEY,{expiresIn:'1h'})
 							res.status(200).send({
-								sucess:true,
+								success:true,
 								message:"Logged in!",
 								user: user.username,
 								token: "Bearer "+token
@@ -168,7 +168,7 @@ app.post("/login",(req,res)=>{
 
 							const token = jwt.sign(payload,process.env.SECRETKEY,{expiresIn:'1h'})
 							res.status(200).send({
-								sucess:true,
+								success:true,
 								message:"Logged in!",
 								user: user.username,
 								token: "Bearer "+token
