@@ -10,6 +10,8 @@ const bcrypt = require('bcrypt')
 const bodyParser = require('body-parser')
 const passport = require('passport')
 const cors = require('cors')
+const url = require('url')
+const querystring = require('querystring')
 
 const SellerUser = require('../models/SellerUserSchema')
 const BuyerUser = require('../models/BuyerUserSchema')
@@ -272,6 +274,36 @@ app.put("/updateshop",passport.authenticate('jwt',{session:false}),(req,res)=>{
 				message:error.errors.sellername.properties.message
 			})
 		}
+	}
+})
+
+app.get("/shop",passport.authenticate('jwt',{session:false}),(req,res)=>{
+	Item.find()
+		.then((response)=>{
+			res.status(200).send(response)
+		})
+})
+
+app.get("/item",passport.authenticate('jwt',{session:false}),(req,res)=>{
+	const searchby = querystring.parse((url.parse(req.originalUrl).query)).searchby
+	const name =  querystring.parse((url.parse(req.originalUrl).query)).name 
+	const sellername =  querystring.parse((url.parse(req.originalUrl).query)).sellername
+	if(searchby==="name"){
+		Item.find({name:name})
+			.then((response)=>{
+				res.status(200).send(response)
+			})
+	}
+	else if(searchby==="sellername"){
+		Item.find({sellername:sellername})
+			.then((response)=>{
+				res.status(200).send(response)
+			})
+	}
+	else {
+		res.status(400).send({
+			message:"Please specify a search parameter"
+		})
 	}
 })
 
