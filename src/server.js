@@ -137,6 +137,7 @@ app.post("/login",(req,res)=>{
 								success:true,
 								message:"Logged in!",
 								user: user.username,
+								userType: "Buyer",
 								token: "Bearer "+token
 							})
 						}
@@ -173,6 +174,7 @@ app.post("/login",(req,res)=>{
 								success:true,
 								message:"Logged in!",
 								user: user.username,
+								userType: "Seller",
 								token: "Bearer "+token
 							})
 						}

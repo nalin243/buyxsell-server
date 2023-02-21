@@ -14,23 +14,24 @@ const options = {
 passport.use(new JwtStrategy(options,(jwtPayload,done)=>{
 		SellerUser.findOne({username:jwtPayload.username})
 		.then((user)=>{
-			if(!user)
-				done(null,false)
+			if(!user){
+				BuyerUser.findOne({username:jwtPayload.username})
+					.then((user)=>{
+						if(!user)
+							done(null,false)
+						else {
+							user['userType'] = "Buyer"
+			 				done(null,user)
+						}
+					})
+			}
 			else {
 				user['userType'] = "Seller"
 				done(null,user)
 			}
 		})
 		.catch((err)=>{
-		BuyerUser.findOne({username:jwtPayload.username})
-		.then((user)=>{
-			if(!user)
-				done(null,false)
-			else {
-				user['userType'] = "Buyer"
- 				done(null,user)
-			}
-		})
+			console.log(err)
 		})
 		
 }))
