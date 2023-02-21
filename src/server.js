@@ -13,6 +13,7 @@ const cors = require('cors')
 
 const SellerUser = require('../models/SellerUserSchema')
 const BuyerUser = require('../models/BuyerUserSchema')
+const Item = require('../models/ItemSchema')
 
 
 mongoose.connect(process.env.DB_URL)
@@ -56,10 +57,30 @@ app.post('/register',(req,res)=>{
 							})
 						}
 						else {
-							res.status(400).send({
-								success:false,
-								message:error.errors.email.properties.message
-							})
+							if(error.errors?.username!=undefined){
+								res.status(400).send({
+									success:false,
+									message:error.errors.username.message
+								})
+							}
+							else if(error.errors?.name!=undefined){
+								res.status(400).send({
+									success:false,
+									message:error.errors.name.message
+								})
+							}
+							else if(error.errors?.email!=undefined){
+								res.status(400).send({
+									success:false,
+									message:error.errors.username.message
+								})
+							}
+							else if(error.errors?.password!=undefined){
+								res.status(400).send({
+									success:false,
+									message:error.errors.username.message
+								})
+							}
 						}
 				})
 			}
@@ -95,10 +116,30 @@ app.post('/register',(req,res)=>{
 							})
 						}
 						else {
-							res.status(400).send({
-								success:false,
-								message:error.errors.email.properties.message
-							})
+							if(error.errors?.username!=undefined){
+								res.status(400).send({
+									success:false,
+									message:error.errors.username.message
+								})
+							}
+							else if(error.errors?.name!=undefined){
+								res.status(400).send({
+									success:false,
+									message:error.errors.name.message
+								})
+							}
+							else if(error.errors?.email!=undefined){
+								res.status(400).send({
+									success:false,
+									message:error.errors.username.message
+								})
+							}
+							else if(error.errors?.password!=undefined){
+								res.status(400).send({
+									success:false,
+									message:error.errors.username.message
+								})
+							}
 						}
 				
 				})
@@ -192,6 +233,46 @@ app.get("/authcheck",passport.authenticate('jwt',{session:false}),(req,res)=>{
 		user:req.user.username,
 		userType:req.user.userType
 	})
+})
+
+app.put("/updateshop",passport.authenticate('jwt',{session:false}),(req,res)=>{
+	console.log("Updating shop...")
+
+	const item = new Item()
+
+	item.name = req.body.name 
+	item.price =  req.body.price 
+	item.description = req.body.description
+	item.sellername = req.body.sellername
+
+	const error = item.validateSync()
+	if(!error){
+		item.save()
+		res.status(200).send({
+			sucess:true,
+			message:"Item added to shop!"
+		})
+	}
+	else{
+		if(error.errors?.name!=undefined){
+			res.status(400).send({
+				success:false,
+				message:error.errors.name.properties.message
+			})
+		}
+		else if(error.errors?.price!=undefined){
+			res.status(400).send({
+				success:false,
+				message:error.errors.price.properties.message
+			})
+		}
+		else if(error.errors?.sellername!=undefined){
+			res.status(400).send({
+				success:false,
+				message:error.errors.sellername.properties.message
+			})
+		}
+	}
 })
 
 app.listen(PORT,HOST,()=>{
