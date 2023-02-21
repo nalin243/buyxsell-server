@@ -307,6 +307,14 @@ app.get("/item",passport.authenticate('jwt',{session:false}),(req,res)=>{
 	}
 })
 
+app.delete("/item",passport.authenticate('jwt',{session:false}),(req,res)=>{
+	const id =  querystring.parse((url.parse(req.originalUrl).query)).id 
+	Item.findOneAndDelete({_id:id})
+		.then((response)=>{
+			res.status(200).send(response)
+		})
+})
+
 app.listen(PORT,HOST,()=>{
 	console.log(`Server started on ${HOST} on port ${PORT}`)
 })
