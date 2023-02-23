@@ -5,7 +5,9 @@ const ItemSchema = new Schema({
 	name:{type:String,required:true},
 	price:{type:Number,required:true},
 	description: String, 
-	sellername: {type:String,required:true}
+	sellername: {type:String,required:true},
+	sold:{type:Boolean,default:false},
+	soldto:{type:String}
 })
 
 module.exports = model('Item',ItemSchema)

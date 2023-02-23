@@ -246,6 +246,8 @@ app.put("/updateshop",passport.authenticate('jwt',{session:false}),(req,res)=>{
 	item.price =  req.body.price 
 	item.description = req.body.description
 	item.sellername = req.body.sellername
+	item.sold = req.body.sold 
+	item.soldto = req.body.soldto 
 
 	const error = item.validateSync()
 	if(!error){
