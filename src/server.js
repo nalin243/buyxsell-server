@@ -302,13 +302,19 @@ app.get("/item",passport.authenticate('jwt',{session:false}),(req,res)=>{
 	if(searchby==="name"){
 		Item.find({name:name})
 			.then((response)=>{
-				res.status(200).send(response)
+				res.status(200).send({
+					success:true,
+					result:response
+				})
 			})
 	}
 	else if(searchby==="sellername"){
 		Item.find({sellername:sellername})
 			.then((response)=>{
-				res.status(200).send(response)
+				res.status(200).send({
+					success:true,
+					result:response
+				})
 			})
 	}
 	else {
