@@ -276,13 +276,22 @@ app.put("/updateshop",passport.authenticate('jwt',{session:false}),(req,res)=>{
 				message:error.errors.sellername.properties.message
 			})
 		}
+		else if(error.errors?.description!=undefined){
+			res.status(400).send({
+				success:false,
+				message:error.errors.description.properties.message
+			})
+		}
 	}
 })
 
 app.get("/shop",passport.authenticate('jwt',{session:false}),(req,res)=>{
 	Item.find()
 		.then((response)=>{
-			res.status(200).send(response)
+			res.status(200).send({
+				success:true,
+				shop:response,
+			})
 		})
 })
 
@@ -314,6 +323,67 @@ app.delete("/item",passport.authenticate('jwt',{session:false}),(req,res)=>{
 	Item.findOneAndDelete({_id:id})
 		.then((response)=>{
 			res.status(200).send(response)
+		})
+})
+
+app.put("/addtocart",passport.authenticate("jwt",{session:false}),(req,res)=>{
+	console.log("Adding to cart...")
+
+	const item = new Item()
+
+	item.name = req.body.name 
+	item.price = req.body.price 
+	item.description = req.body.description 
+	item.sellername = req.body.sellername 
+
+	const error = item.validateSync()
+	if(!error){
+		BuyerUser.findOne({username:req.body.user})
+			.then((user)=>{
+				user.Cart.push(item)
+				user.save()
+				res.status(200).send({
+					success:true,
+					message:"Item added to cart!"
+				})
+			})
+	}
+	else {
+		if(error.errors?.name!=undefined){
+			res.status(400).send({
+				success:false,
+				message:error.errors.name.properties.message
+			})
+		}
+		else if(error.errors?.price!=undefined){
+			res.status(400).send({
+				success:false,
+				message:error.errors.price.properties.message
+			})
+		}
+		else if(error.errors?.sellername!=undefined){
+			res.status(400).send({
+				success:false,
+				message:error.errors.sellername.properties.message
+			})
+		}
+		else if(error.errors?.description!=undefined){
+			res.status(400).send({
+				success:false,
+				message:error.errors.description.properties.message
+			})
+		}
+	}
+})
+
+app.get("/cart",passport.authenticate('jwt',{session:false}),(req,res)=>{
+	const user =  querystring.parse((url.parse(req.originalUrl).query)).user
+	BuyerUser.findOne({username:user})
+		.then((user)=>{
+			res.status(200).send({
+				success:true,
+				cart: user.Cart
+			})
 		})
 })
 
