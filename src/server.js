@@ -388,7 +388,26 @@ app.get("/cart",passport.authenticate('jwt',{session:false}),(req,res)=>{
 		.then((user)=>{
 			res.status(200).send({
 				success:true,
-				cart: user.Cart
+				cart: user.Cart,
+				user: user.username
+			})
+		})
+})
+
+app.delete("/cartitem",passport.authenticate('jwt',{session:false}),(req,res)=>{
+	const username = querystring.parse((url.parse(req.originalUrl).query)).username
+	const id = querystring.parse((url.parse(req.originalUrl).query)).id
+	BuyerUser.findOne({username:username})
+		.then((user)=>{
+			const cart = user.Cart
+			user.Cart = cart.filter((item)=>{
+				return (item._id).toString() !== id
+			})
+			user.save()
+			res.status(200).send({
+				success:true,
+				message:"Item deleted from cart!",
+				cart:user.Cart
 			})
 		})
 })
